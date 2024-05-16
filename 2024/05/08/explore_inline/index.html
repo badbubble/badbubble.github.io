@@ -16,19 +16,23 @@
   <meta name="author" content="BadBubble">
   <meta name="keywords" content="">
   
-    <meta property="og:type" content="article">
-<meta property="og:title" content="new start">
-<meta property="og:url" content="http://badbub.com/2022/08/06/start/index.html">
+    <meta name="description" content="Before we dive deeper, let’s cover some basic concepts first. The Java compiler is crucial for converting Java code into machine code. It generally operates in two modes:  JIT (Just-in-Time), which co">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Exploring the inline phase of Graal compiler">
+<meta property="og:url" content="http://badbub.com/2024/05/08/explore_inline/index.html">
 <meta property="og:site_name" content="BadBubble">
+<meta property="og:description" content="Before we dive deeper, let’s cover some basic concepts first. The Java compiler is crucial for converting Java code into machine code. It generally operates in two modes:  JIT (Just-in-Time), which co">
 <meta property="og:locale" content="en_US">
-<meta property="article:published_time" content="2022-08-06T10:17:45.000Z">
-<meta property="article:modified_time" content="2022-08-06T10:17:53.733Z">
+<meta property="og:image" content="http://badbub.com/img/explore_inline/c0c1c2.jpg">
+<meta property="article:published_time" content="2024-05-08T16:17:45.000Z">
+<meta property="article:modified_time" content="2024-05-16T08:29:51.869Z">
 <meta property="article:author" content="BadBubble">
 <meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="http://badbub.com/img/explore_inline/c0c1c2.jpg">
   
   
   
-  <title>new start - BadBubble</title>
+  <title>Exploring the inline phase of Graal compiler - BadBubble</title>
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
 
@@ -66,7 +70,7 @@
   <script id="fluid-configs">
     var Fluid = window.Fluid || {};
     Fluid.ctx = Object.assign({}, Fluid.ctx)
-    var CONFIG = {"hostname":"badbub.com","root":"/","version":"1.9.2","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+    var CONFIG = {"hostname":"badbub.com","root":"/","version":"1.9.7","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"gtag":null},"search_path":"/local-search.xml","include_content_in_search":true};
 
     if (CONFIG.web_analytics.follow_dnt) {
       var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
@@ -79,7 +83,7 @@
 
 
   
-<meta name="generator" content="Hexo 6.2.0"></head>
+<meta name="generator" content="Hexo 6.3.0"></head>
 
 
 <body>
@@ -110,9 +114,9 @@
           
           
             <li class="nav-item">
-              <a class="nav-link" href="/">
+              <a class="nav-link" href="/" target="_self">
                 <i class="iconfont icon-home-fill"></i>
-                Home
+                <span>Home</span>
               </a>
             </li>
           
@@ -122,9 +126,9 @@
           
           
             <li class="nav-item">
-              <a class="nav-link" href="/archives/">
+              <a class="nav-link" href="/archives/" target="_self">
                 <i class="iconfont icon-archive-fill"></i>
-                Archives
+                <span>Archives</span>
               </a>
             </li>
           
@@ -134,9 +138,9 @@
           
           
             <li class="nav-item">
-              <a class="nav-link" href="/categories/">
+              <a class="nav-link" href="/categories/" target="_self">
                 <i class="iconfont icon-category-fill"></i>
-                Categories
+                <span>Categories</span>
               </a>
             </li>
           
@@ -146,9 +150,9 @@
           
           
             <li class="nav-item">
-              <a class="nav-link" href="/tags/">
+              <a class="nav-link" href="/tags/" target="_self">
                 <i class="iconfont icon-tags-fill"></i>
-                Tags
+                <span>Tags</span>
               </a>
             </li>
           
@@ -158,9 +162,9 @@
           
           
             <li class="nav-item">
-              <a class="nav-link" href="/about/">
+              <a class="nav-link" href="/about/" target="_self">
                 <i class="iconfont icon-user-fill"></i>
-                About
+                <span>About</span>
               </a>
             </li>
           
@@ -168,15 +172,16 @@
         
           <li class="nav-item" id="search-btn">
             <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
-              &nbsp;<i class="iconfont icon-search"></i>&nbsp;
+              <i class="iconfont icon-search"></i>
             </a>
           </li>
           
         
         
           <li class="nav-item" id="color-toggle-btn">
-            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">&nbsp;<i
-                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
           </li>
         
       </ul>
@@ -193,7 +198,7 @@
       <div class="banner-text text-center fade-in-up">
         <div class="h2">
           
-            <span id="subtitle" data-typed-text="new start"></span>
+            <span id="subtitle" data-typed-text="Exploring the inline phase of Graal compiler"></span>
           
         </div>
 
@@ -204,8 +209,8 @@
     
       <span class="post-meta">
         <i class="iconfont icon-date-fill" aria-hidden="true"></i>
-        <time datetime="2022-08-06 18:17" pubdate>
-          August 6, 2022 pm
+        <time datetime="2024-05-08 18:17" pubdate>
+          May 8, 2024 pm
         </time>
       </span>
     
@@ -216,7 +221,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          0 words
+          137 words
         
       </span>
     
@@ -227,7 +232,7 @@
         
         
         
-          1 mins
+          2 mins
         
       </span>
     
@@ -264,13 +269,59 @@
       <div class="container nopadding-x-md" id="board-ctn">
         <div id="board">
           <article class="post-content mx-auto">
-            <!-- SEO header -->
-            <h1 style="display: none">new start</h1>
+            <h1 id="seo-header">Exploring the inline phase of Graal compiler</h1>
             
             
               <div class="markdown-body">
                 
-                
+                <p>Before we dive deeper, let’s cover some basic concepts first.</p>
+<p>The Java compiler is crucial for converting Java code into machine code. It generally operates in two modes:</p>
+<ul>
+<li>JIT (Just-in-Time), which compiles code as it’s needed during execution.</li>
+<li>AOT (Ahead-of-Time), which compiles all the code before execution starts.</li>
+</ul>
+<p>The Java compiler in the JDK is called HotSpot. It includes three types:</p>
+<ul>
+<li>C0: The simplest form, a bytecode interpreter.</li>
+<li>C1: The client compiler, it compiles quickly but with less optimization.</li>
+<li>C2: The server compiler, which optimizes thoroughly but compiles slowly.</li>
+</ul>
+<p>When a program runs, it starts with C0 interpreting the bytecode. Then, to speed up execution, C1 quickly compiles the code. For code that’s run often, C2 takes over, producing highly optimized machine code.</p>
+<p><img src="/../img/explore_inline/c0c1c2.jpg" srcset="/img/loading.gif" lazyload></p>
+<p>C2 performs aggressive optimizations by analyzing execution data, such as determining not to compile functions that are not used from begining of execution. However, these aggressive optimizations can sometimes lead to issues. For instance, if C2 chooses not to compile a function but it’s needed later, the VM has to rely on machine code generated by C1 or revert to using C0 to interpret it. This stage is called deoptimzation, which can result in performance drawbacks.</p>
+<p>If a piece of code, usually a function, is executed a certain number of times, it’s recognized as a HotSpot and then compiled into machine code.</p>
+<h2 id="Graal-compiler-written-in-Java"><a href="#Graal-compiler-written-in-Java" class="headerlink" title="Graal compiler written in Java"></a>Graal compiler written in Java</h2><p>The Java compiler in the JDK is written in C++, which can be challenging to read for some programmers(myself at the moment). Additionally, C++ can lead to memory and security issues, such as stack overflows and memory leaks.</p>
+<p>The good news is there’s a Java compiler called Graal, which is written in Java itself. You can use the Graal compiler to replace the one inside the JDK, provided that the JDK version supports JVMCI (JVM Compiler Interface). Any JIT compiler that implements this interface can be used by the JVM.</p>
+<p>GraalVM is a JVM developed by Oracle that uses Graal as its JIT compiler. It supports not only Java but also JavaScript, Ruby, R, and Python through a framework called Truffle layered on top of Graal. Additionally, it supports C, C++, and Rust by adding another layer on top of Truffle called Sulong.<br>GraalVM supports Ahead-of-Time (AOT) compilation. You can compile your project into a native image using GraalVM, which can significantly reduce startup time.<br><img src="/../img/explore_inline/graal_arch.jpg" srcset="/img/loading.gif" lazyload></p>
+<h3 id="Understanding-the-Graal-Compiler-by-building-modifying-and-debugging-it"><a href="#Understanding-the-Graal-Compiler-by-building-modifying-and-debugging-it" class="headerlink" title="Understanding the Graal Compiler by building, modifying, and debugging it"></a>Understanding the Graal Compiler by building, modifying, and debugging it</h3><p>Clone graal source code from Github</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">git <span class="hljs-built_in">clone</span> git@github.com:oracle/graal.git<br></code></pre></td></tr></table></figure>
+
+<p>Clone mx, the command-line tool used for the development of Graal projects</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">git <span class="hljs-built_in">clone</span> git@github.com:graalvm/mx.git<br></code></pre></td></tr></table></figure>
+
+<p>Set mx in $PATH</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-built_in">export</span> PATH=<span class="hljs-string">&quot;/path/to/mx/bin:<span class="hljs-variable">$PATH</span>&quot;</span><br></code></pre></td></tr></table></figure>
+
+<p>Install JDK supports JVMCI by using mx</p>
+<figure class="highlight ebnf"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs ebnf"><span class="hljs-attribute">mx fetch-jdk</span><br></code></pre></td></tr></table></figure>
+<p><img src="/../img/explore_inline/fetch_jdk.jpg" srcset="/img/loading.gif" lazyload><br>Set JAVA_HOME in $PATH</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-built_in">export</span> JAVA_HOME=/path/to/.mx/jdks/labsjdk-ce-21-jvmci-23.1-b33/Contents/Home<br></code></pre></td></tr></table></figure>
+
+<p>Move to graal compiler and compile</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-built_in">cd</span> graal/compiler/<br>mx build<br></code></pre></td></tr></table></figure>
+
+
+<h2 id="Sea-of-Nodes"><a href="#Sea-of-Nodes" class="headerlink" title="Sea of Nodes"></a>Sea of Nodes</h2><pre><code class="bash">mx vm \
+  -XX:+UnlockExperimentalVMOptions \
+  -XX:+EnableJVMCI \
+  -XX:+UseJVMCICompiler \
+  -XX:-TieredCompilation \
+  -XX:CompileOnly=Foo \
+  -Dgraal.Dump \
+  -Xcomp \
+Foo
+</code></pre>
+
                 
               </div>
             
@@ -287,8 +338,8 @@
 
   <div class="license-box my-3">
     <div class="license-title">
-      <div>new start</div>
-      <div>http://badbub.com/2022/08/06/start/</div>
+      <div>Exploring the inline phase of Graal compiler</div>
+      <div>http://badbub.com/2024/05/08/explore_inline/</div>
     </div>
     <div class="license-meta">
       
@@ -300,25 +351,27 @@
       
         <div class="license-meta-item license-meta-date">
           <div>Posted on</div>
-          <div>August 6, 2022</div>
+          <div>May 8, 2024</div>
         </div>
       
       
-      <div class="license-meta-item">
-        <div>Licensed under</div>
-        <div>
-          
+      
+        <div class="license-meta-item">
+          <div>Licensed under</div>
+          <div>
             
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - Attribution">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
             
-              <a target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
-              <span class="hint--top hint--rounded" aria-label="BY - Attribution">
-                <i class="iconfont icon-by"></i>
-              </span>
-              </a>
-            
-          
+          </div>
         </div>
-      </div>
+      
     </div>
     <div class="license-icon iconfont"></div>
   </div>
@@ -349,7 +402,10 @@
       
   <aside class="sidebar" style="margin-left: -1rem">
     <div id="toc">
-  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;Table of Contents</p>
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>Table of Contents</span>
+  </p>
   <div class="toc-body" id="toc-body"></div>
 </div>
 
@@ -492,22 +548,34 @@
     var boardCtn = jQuery('#board-ctn');
     var boardTop = boardCtn.offset().top;
 
-    window.tocbot.init({
+    window.tocbot.init(Object.assign({
       tocSelector     : '#toc-body',
       contentSelector : '.markdown-body',
-      headingSelector : CONFIG.toc.headingSelector || 'h1,h2,h3,h4,h5,h6',
       linkClass       : 'tocbot-link',
       activeLinkClass : 'tocbot-active-link',
       listClass       : 'tocbot-list',
       isCollapsedClass: 'tocbot-is-collapsed',
       collapsibleClass: 'tocbot-is-collapsible',
-      collapseDepth   : CONFIG.toc.collapseDepth || 0,
       scrollSmooth    : true,
-      headingsOffset  : -boardTop
-    });
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
     if (toc.find('.toc-list-item').length > 0) {
       toc.css('visibility', 'visible');
     }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
   });
 </script>
 
@@ -536,6 +604,21 @@
       window.anchors.options.class = 'anchorjs-link-left';
     }
     window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
   });
 </script>
 
